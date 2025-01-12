@@ -1,16 +1,10 @@
-from context_generation import create_context
-from data_generation import generate_response
+from data_processing import process_personas
 
 # from validation import validate_output
 
-# Load demographic data
-demographic_data = {"age": 28, "gender": "female", "interests": "sustainability"}
-
-# Generate context
-context = create_context(demographic_data)
 
 # Generate synthetic data
-synthetic_response = generate_response(context)
-
-# Validate response
-print("Synthetic Response:", synthetic_response)
+if __name__ == "__main__":
+    input_csv = "data/persona_profiles.csv"  # Replace with your input CSV file
+    output_csv = "data/persona_profiles_with_responses.csv"  # Replace with your desired output file name
+    process_personas(input_csv, output_csv)
