@@ -16,7 +16,7 @@ def generate_response(context):
         str: The AI-generated response.
     """
     response = client.chat.completions.create(
-        model="gpt-4o-mini",  # Use "gpt-4" or "gpt-4-turbo" based on your requirements
+        model="gpt-5-nano",  # Use "gpt-4" or "gpt-4-turbo" based on your requirements
         messages=[
             {
                 "role": "system",
@@ -36,8 +36,8 @@ def generate_response(context):
                 ),
             },
         ],
-        max_tokens=200,  # Increase max_tokens to allow detailed responses
-        temperature=0.7,  # Adjust temperature for creativity (0.7 is a balanced choice)
+        max_completion_tokens=200,  # Increase max_tokens to allow detailed responses
+        #temperature=0.7,  # Adjust temperature for creativity (0.7 is a balanced choice)
     )
 
     # Extract response content
