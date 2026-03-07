@@ -1,45 +1,53 @@
+import json
 from openai import OpenAI
+
 from get_api_key import get_api_key
 
 api_key = get_api_key()
 client = OpenAI(api_key=api_key)
 
 
-def generate_response(context):
+def generate_star_rating(context):
     """
-    Generate a response based on the persona context.
+    Predict the star rating (1-5) based on survey responses.
 
     Args:
-        context (str): A conditioning context describing the persona.
+        context (str): All survey question/answer pairs except Q48.
 
     Returns:
-        str: The AI-generated response.
+        dict: Parsed output with star_rating and raw text.
     """
     response = client.chat.completions.create(
-        model="gpt-5-nano",  # Use "gpt-4" or "gpt-4-turbo" based on your requirements
+        model="gpt-5.1",
         messages=[
             {
                 "role": "system",
-                "content": "You will be provided with a descriptive context and please imagine you are this person and provide precise answers based on the provided background",
+                "content": (
+                    "You are predicting a survey respondent's hotel star rating (1-5). "
+                    "Use all provided answers as evidence."
+                ),
             },
             {
                 "role": "user",
                 "content": (
-                    f"{context}\n\n"
-                    "Please answer the following questions without given reasons:\n"
-                    "1. Do you prefer online shopping or offline shopping for lamps?\n"
-                    "2. What is the maximum amount you are willing to pay for a lamp (in euros)?\n"
-                    "3. How many lamps would you buy per year?\n"
-                    "4. Among the following aspects: Brightness, Efficiency, Affordability, Durability, Design, "
-                    "Portability, Convenience, Sustainability, Technology, Safety, which three aspects are the most valued by you?\n"
-                    "please answer these questions in a string, for example: online, 100, 1, Efficiency; Affordability; Safety\n"
+                    f"Survey responses (excluding the star rating question):\n{context}\n\n"
+                    "Return JSON with keys:\n"
+                    "- star_rating (integer 1-5)\n"
+                    "Only return valid JSON."
                 ),
             },
         ],
-        max_completion_tokens=200,  # Increase max_tokens to allow detailed responses
-        #temperature=0.7,  # Adjust temperature for creativity (0.7 is a balanced choice)
+        max_completion_tokens=120,
+        temperature=0.3,
     )
 
-    # Extract response content
-    content = response.choices[0].message.content
-    return content
+    content = response.choices[0].message.content or ""
+    try:
+        parsed = json.loads(content)
+    except json.JSONDecodeError:
+        parsed = {"star_rating": None}
+
+    return {
+        "star_rating": parsed.get("star_rating"),
+        "raw": content,
+    }

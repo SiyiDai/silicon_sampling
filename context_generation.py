@@ -1,39 +1,42 @@
-import pandas as pd
+import csv
 
 
-def generate_persona_data(csv_file):
+def load_survey_rows(csv_file):
     """
-    Load a CSV file and generate conditioning contexts for each persona.
+    Load a Qualtrics-style CSV and yield rows as dicts.
 
-    Args:
-        csv_file (str): Path to the CSV file containing persona profiles.
-
-    Returns:
-        pd.DataFrame: DataFrame with a new 'Conditioning Context' column.
+    The file includes multiple header/metadata rows. Row 2 contains the field names.
     """
-    # Load the CSV data into a pandas DataFrame
-    data = pd.read_csv(csv_file)
-
-    # Define a function to create conditioning contexts
-    def create_context(row):
-        return (
-            f"I am a {row['Age']}-year-old {row['Cultural Background']} {row['Sex']}, "
-            f"with a monthly disposable income of €{row['Income Level (€)']}. "
-            f"I live in a {row['Living Conditions']} and spend approximately €{row['Grocery Expense (€)']} on groceries each month. "
-            f"My brand perception is '{row['Brand Perception']}'."
-        )
-
-    # Generate conditioning contexts for all rows in the DataFrame
-    data["Conditioning Context"] = data.apply(create_context, axis=1)
-
-    # # Display the first few rows with the generated contexts
-    # print(data[["Name", "Conditioning Context"]])
-
-    # Optional: Save the updated DataFrame with conditioning contexts to a new CSV file
-    # output_file = "college_student_personas_with_context.csv"
-    # data.to_csv(output_file, index=False)
-
-    return data
+    with open(csv_file, newline="", encoding="utf-8") as handle:
+        reader = csv.reader(handle)
+        _ = next(reader)  # Column1..ColumnN
+        fieldnames = next(reader)
+        labels = next(reader)  # human-readable labels
+        _ = next(reader)  # import metadata
+        for row in reader:
+            if not row or all(not cell.strip() for cell in row):
+                continue
+            yield fieldnames, labels, dict(zip(fieldnames, row))
 
 
-# generate_persona_data("persona_profiles.csv")
+def build_prediction_context(row, labels):
+    """
+    Build a structured context from all question/answer pairs except Q48.
+    """
+    label_map = dict(zip(row.keys(), labels))
+    qa_lines = []
+    for key, answer in row.items():
+        if not key.startswith("Q"):
+            continue
+        if key == "Q48":
+            continue
+        if not answer:
+            continue
+        question = label_map.get(key) or key
+        question = question.replace("\n", " ").strip()
+        qa_lines.append(f"{question} Answer: {answer}")
+
+    if not qa_lines:
+        return "No survey responses available."
+
+    return "\n".join(qa_lines)
