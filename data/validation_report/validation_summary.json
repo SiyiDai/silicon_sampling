@@ -1,0 +1,58 @@
+{
+  "predictions_csv": ".\\data\\persona_answers.csv",
+  "source_input": ".\\data\\round3_data_clean.xlsx",
+  "output_dir": "data\\validation_report",
+  "num_personas": 400,
+  "num_questions": 17,
+  "question_keys": [
+    "Q48",
+    "Q23_1",
+    "Q23_2",
+    "Q24_1",
+    "Q24_2",
+    "Q24_3",
+    "Q24_4",
+    "Q24_5",
+    "Q27_1",
+    "Q27_2",
+    "Q27_3",
+    "Q16",
+    "Q31_1",
+    "Q31_2",
+    "Q31_3",
+    "Q31_4",
+    "Q31_5"
+  ],
+  "group_columns": [
+    "Q29",
+    "Q30",
+    "Q31"
+  ],
+  "overall": {
+    "compared": 6783,
+    "exact_match": 0.2335249889429456,
+    "macro_precision": 0.2201275276743151,
+    "macro_recall": 0.15527623247062391,
+    "macro_f1": 0.1531373222905858,
+    "weighted_f1": 0.23828459795651058,
+    "numeric_compared": 6393,
+    "mae": 1.3998122946973253,
+    "rmse": 1.8655328280886307,
+    "mean_actual": 4.571093383388081,
+    "mean_predicted": 4.463632097606758,
+    "mean_bias": -0.10746128578132333,
+    "pearson": 0.46402881426785747,
+    "spearman": 0.4671736412347958,
+    "tvd": 0.2423706324635117,
+    "js_divergence": 0.10338526948361376
+  },
+  "artifacts": {
+    "persona_metrics_csv": "data\\validation_report\\persona_metrics.csv",
+    "question_metrics_csv": "data\\validation_report\\question_metrics.csv",
+    "group_metrics_csv": "data\\validation_report\\group_metrics.csv",
+    "group_question_metrics_csv": "data\\validation_report\\group_question_metrics.csv",
+    "trend_metrics_csv": "data\\validation_report\\trend_metrics.csv",
+    "trend_detail_csv": "data\\validation_report\\trend_detail.csv",
+    "summary_json": "data\\validation_report\\validation_summary.json"
+  }
+}
