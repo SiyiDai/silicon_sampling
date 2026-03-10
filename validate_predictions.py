@@ -83,6 +83,11 @@ def _rmse(actual: Sequence[float], predicted: Sequence[float]) -> float | None:
         return None
     return math.sqrt(sum((a - p) ** 2 for a, p in zip(actual, predicted)) / len(actual))
 
+def _euclidean(actual: Sequence[float], predicted: Sequence[float]) -> float | None:
+    if not actual or len(actual) != len(predicted):
+        return None
+    return math.sqrt(sum((a - p) ** 2 for a, p in zip(actual, predicted)))
+
 
 def _pearson(x: Sequence[float], y: Sequence[float]) -> float | None:
     if len(x) < 2 or len(y) < 2 or len(x) != len(y):
@@ -199,8 +204,7 @@ def _numeric_metrics(actual_values: Sequence[float], predicted_values: Sequence[
     if not actual_values:
         return {
             "numeric_compared": 0,
-            "mae": None,
-            "rmse": None,
+            "euclidean_distance": None,
             "mean_actual": None,
             "mean_predicted": None,
             "mean_bias": None,
@@ -208,19 +212,16 @@ def _numeric_metrics(actual_values: Sequence[float], predicted_values: Sequence[
             "spearman": None,
         }
 
-    absolute_errors = [abs(actual - predicted) for actual, predicted in zip(actual_values, predicted_values)]
     signed_errors = [predicted - actual for actual, predicted in zip(actual_values, predicted_values)]
     return {
         "numeric_compared": len(actual_values),
-        "mae": sum(absolute_errors) / len(absolute_errors),
-        "rmse": _rmse(actual_values, predicted_values),
+        "euclidean_distance": _euclidean(actual_values, predicted_values),
         "mean_actual": _mean(actual_values),
         "mean_predicted": _mean(predicted_values),
         "mean_bias": _mean(signed_errors),
         "pearson": _pearson(actual_values, predicted_values),
         "spearman": _spearman(actual_values, predicted_values),
     }
-
 
 def _compute_metrics(pairs: Sequence[Tuple[object, object]]) -> Dict[str, float | int | None]:
     cleaned_pairs = [(_clean_text(actual), _clean_text(predicted)) for actual, predicted in pairs]
@@ -452,14 +453,12 @@ def validate_predictions(
             predicted_means = [float(row["predicted_mean"]) for row in detail_subset if row.get("predicted_mean") is not None]
             if len(actual_means) != len(predicted_means) or len(actual_means) < 2:
                 continue
-            group_gaps = [abs(pred - act) for act, pred in zip(actual_means, predicted_means)]
             trend_rows.append(
                 {
                     "group_column": group_col,
                     "question": question_key,
                     "num_groups": len(detail_subset),
-                    "mean_absolute_gap_across_groups": _mean(group_gaps),
-                    "rmse_across_group_means": _rmse(actual_means, predicted_means),
+                    "euclidean_distance_across_group_means": _euclidean(actual_means, predicted_means),
                     "pearson_group_mean_correlation": _pearson(actual_means, predicted_means),
                     "spearman_group_mean_correlation": _spearman(actual_means, predicted_means),
                 }
@@ -533,14 +532,26 @@ if __name__ == "__main__":
     overall = summary.get("overall", {})
     exact_match = overall.get("exact_match")
     macro_f1 = overall.get("macro_f1")
-    mae = overall.get("mae")
+    spearman = overall.get("spearman")
+    euclidean = overall.get("euclidean_distance")
     compared = overall.get("compared")
     message_parts = ["Validation complete.", f"Compared answers: {compared}"]
     if isinstance(exact_match, float):
         message_parts.append(f"Exact match: {exact_match:.3f}")
     if isinstance(macro_f1, float):
         message_parts.append(f"Macro-F1: {macro_f1:.3f}")
-    if isinstance(mae, float):
-        message_parts.append(f"MAE: {mae:.3f}")
+    if isinstance(spearman, float):
+        message_parts.append(f"Spearman: {spearman:.3f}")
+    if isinstance(euclidean, float):
+        message_parts.append(f"Euclidean distance: {euclidean:.3f}")
     print("; ".join(message_parts))
     print(f"Summary written to {summary['artifacts']['summary_json']}")
+
+
+
+
+
+
+
+
+
