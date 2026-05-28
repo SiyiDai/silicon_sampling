@@ -1,0 +1,273 @@
+【背景资料来源】Survo competitor.md
+
+【给persona的使用方式】
+- 这是一份问卷前的竞品/机制背景材料，用于帮助persona理解GLP-1、GIP、胰高糖素机制及主要竞品差异。
+- 不要把背景材料当作个人经历；persona是否知道、相信、偏好某个品牌，仍要由其年龄、BMI、合并症、支付能力、就医路径和信息渠道决定。
+- Survodutide相关信息可影响对“代谢健康、脂肪肝/MASH、能量消耗”的理解；Mazdutide相关信息可影响对“体重/外观和综合减重”的理解。
+- 若persona缺少专业医疗知识，回答中可以表现为只理解部分概念或依赖医生/社媒转述。
+- 作答时不能用背景材料改写CFPS硬事实或筛选条件。
+
+【完整背景材料（已清理Markdown转义，保留原有结构）】
+# Survo competitor
+
+# **Desk research (pre-survey)**
+
+## KTAs
+
+- Mazdutide and Survodutide targets both appetite suppression plus increased energy expenditure --> this is different in terms of being more comprehensive than others
+
+    - First generation GLP-1 like Semaglutide focuses on appetite suppression; future medications such as Orforglipron are also appetite suppression only, but more convenient due to oral pills instead of injection
+
+    - Tirzepatide targets metabolic control through incretin hormones
+
+- Between Mazdutide and Survodutide, patient motivations may differ: Survo --> metabolic health (fatty liver) vs Maz (appearance)
+
+## **Overview, by provider**
+
+## **Medical investment, by mechanism**
+
+GLP-1 (Glucagon-Like Peptide-1, in all): GLP-1 is a natural gut hormone released after eating. It signals to the brain and pancreas that food has been consumed and helps regulate metabolism.
+
+- reduces appetite: acts on appetite centers in the hypothalamus in the brain --> increases satiety (feeling full), reduces hunger signals
+
+- slows gastric emptying: slows the rate at which food leaves the stomach, slower absorption of glucose
+
+- improves insulin secretion: stimulates insulin release from pancreatic beta cells, but only when blood glucose is elevated
+
+GIP (Glucose-Dependent Insulinotropic Polypeptide, in Tirzepatide): another incretin hormone released by the gut after eating; it mainly regulates glucose metabolism and insulin sensitivity.
+
+- improves insulin sensitivity: helps the body’s cells respond better to insulin, by muscle and fat cells absorb glucose more efficiently + blood glucose levels decrease
+
+- enhances glucose metabolism: enhances insulin secretion when glucose levels rise
+
+- works strongly for diabetes control: supports pancreatic beta cells --> helps maintain long-term glucose regulation
+
+Glucagon (in Mazdutide / Survodutide): known as a hormone that raises blood glucose, but when used therapeutically in combination with GLP-1, it has important metabolic effects on energy expenditure and fat metabolism
+
+- increases energy expenditure: stimulates metabolic activity in the liver and other tissues --> body burns more energy even at rest
+
+- stimulates fat metabolism: promotes lipolysis, the breakdown of stored fat
+
+- reduces liver fat: improves liver metabolism
+
+---
+
+# **Research second stage - Based on survey (in Chinese)**
+
+## 利拉鲁肽（诺和力、利鲁平）
+
+### 药物类别
+
+GLP-1（胰高糖素样肽-1）受体激动剂
+
+### 作用机制
+
+利拉鲁肽通过模拟人体天然 GLP-1 激素发挥作用：
+
+- 作用于大脑食欲中枢，增强饱腹感，减少食欲
+
+- 延缓胃排空，减缓食物吸收速度
+
+- 在血糖升高时促进胰岛素分泌
+
+- 降低餐后血糖波动
+
+### 主要特点
+
+- 属于较早上市的长效 GLP-1 类药物
+
+- 临床应用经验丰富
+
+- 同时具备降糖与减重效果
+
+- 需每日注射一次
+
+### 适应症方向
+
+- 2 型糖尿病
+
+- 超重及肥胖管理
+
+---
+
+## 贝那鲁肽（菲塑美、谊生泰）
+
+### 药物类别
+
+GLP-1（胰高糖素样肽-1）受体激动剂
+
+### 作用机制
+
+贝那鲁肽通过激活 GLP-1 受体发挥代谢调节作用：
+
+- 增强饱腹感，减少进食量
+
+- 延缓胃排空速度
+
+- 促进葡萄糖依赖性的胰岛素分泌
+
+- 帮助改善血糖控制
+
+### 主要特点
+
+- 国产 GLP-1 类药物
+
+- 在中国市场应用较广
+
+- 兼顾糖尿病治疗与体重管理
+
+- 对部分患者胃肠道耐受性较好
+
+### 适应症方向
+
+- 2 型糖尿病
+
+- 肥胖及体重控制
+
+---
+
+## 司美格鲁肽（诺和盈、诺和泰）
+
+### 药物类别
+
+GLP-1（胰高糖素样肽-1）受体激动剂
+
+### 作用机制
+
+司美格鲁肽通过长效激活 GLP-1 通路发挥作用：
+
+- 明显抑制食欲
+
+- 增强饱腹感
+
+- 延缓胃排空
+
+- 促进胰岛素分泌并改善血糖控制
+
+### 主要特点
+
+- 新一代长效 GLP-1 药物
+
+- 减重效果显著
+
+- 周制剂，可每周注射一次
+
+- 在全球减重市场应用广泛
+
+### 适应症方向
+
+- 2 型糖尿病
+
+- 超重与肥胖管理
+
+---
+
+## 替尔泊肽（穆峰达）
+
+### 药物类别
+
+GLP-1 / GIP 双重受体激动剂
+
+### 作用机制
+
+替尔泊肽同时激活 GLP-1 与 GIP 两条代谢通路：
+
+- 抑制食欲并增强饱腹感
+
+- 延缓胃排空
+
+- 提高胰岛素敏感性
+
+- 增强葡萄糖代谢效率
+
+- 改善胰岛 β 细胞功能
+
+### 主要特点
+
+- 全球首个 GLP-1/GIP 双靶点药物
+
+- 降糖与减重效果较强
+
+- 对胰岛素抵抗改善明显
+
+- 每周注射一次
+
+### 适应症方向
+
+- 2 型糖尿病
+
+- 肥胖与代谢综合征管理
+
+---
+
+## 玛仕度肽（信尔美）
+
+### 药物类别
+
+GLP-1 / 胰高糖素双重受体激动剂
+
+### 作用机制
+
+玛仕度肽结合 GLP-1 与胰高糖素双重机制：
+
+- 抑制食欲并减少热量摄入
+
+- 增加机体能量消耗
+
+- 促进脂肪分解
+
+- 改善肝脏脂肪代谢
+
+- 帮助降低脂肪肝风险
+
+### 主要特点
+
+- 中国创新代谢类药物代表之一
+
+- 兼具“少吃”与“多消耗”双重减重机制
+
+- 在减脂及代谢改善方面潜力较强
+
+- 对肥胖合并脂肪肝人群具有潜在优势
+
+### 适应症方向
+
+- 肥胖管理
+
+- 代谢异常相关疾病
+
+---
+
+## 埃诺格鲁肽（先维盈、先颐达）
+
+### 药物类别
+
+GLP-1（胰高糖素样肽-1）受体激动剂
+
+### 作用机制
+
+埃诺格鲁肽通过激活 GLP-1 通路调节代谢：
+
+- 增强饱腹感并减少食欲
+
+- 延缓胃排空
+
+- 促进葡萄糖依赖性胰岛素分泌
+
+- 帮助控制血糖与体重
+
+### 主要特点
+
+- 国产长效 GLP-1 创新药
+
+- 兼顾降糖与减重需求
+
+- 长效给药设计提升依从性
+
+- 在代谢综合征领域具有发展潜力
+
+### 适应症方向
+
+- 2 型糖尿病
+
+- 超重及肥胖管理
