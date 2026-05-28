@@ -32,10 +32,10 @@ from data_generation import (
 
 PIPELINE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = PIPELINE_DIR.parent
-DEFAULT_INPUT = PROJECT_ROOT / "data" / "persona_seed" / "肥胖患者210样本_清洗与EDA_中文" / "清洗后_210样本.csv"
 DEFAULT_QUESTIONNAIRE_TEMPLATE = PROJECT_ROOT / "questionnaire" / "obesity_patient_questionnaire_template.py"
 DEFAULT_BACKGROUND_FILE = Path(r"C:\Users\siyid\Downloads\Survo competitor.md")
-DEFAULT_OUTPUT_DIR = PIPELINE_DIR / "data" / "obesity_questionnaire_10_persona_comparison"
+DEFAULT_INPUT = PIPELINE_DIR / "data" / "清洗后_210样本.csv"
+DEFAULT_OUTPUT_DIR = PIPELINE_DIR / "data" / "obesity_questionnaire_210_persona_full_comparison"
 
 
 def load_questionnaire_module(path: Path) -> Any:
@@ -163,7 +163,7 @@ def select_random_personas(df: pd.DataFrame, limit: int, seed: int) -> pd.DataFr
         raise ValueError("--limit must be positive")
     if len(df) < limit:
         raise ValueError(f"Not enough rows to sample {limit}; only {len(df)} rows available.")
-    selected = df.sample(n=limit, random_state=seed).copy()
+    selected = df.copy() if limit >= len(df) else df.sample(n=limit, random_state=seed).copy()
     return selected.sort_values("样本编号").reset_index(drop=True) if "样本编号" in selected.columns else selected.reset_index(drop=True)
 
 
@@ -737,7 +737,7 @@ def process_questionnaire_comparison(
     *,
     input_file: str,
     output_dir: str,
-    limit: int = 10,
+    limit: int = 210,
     seed: int = 20260528,
     variants: str = "both",
     background_file: str | None = str(DEFAULT_BACKGROUND_FILE),
@@ -755,8 +755,9 @@ def process_questionnaire_comparison(
     qnr_module = load_questionnaire_module(Path(questionnaire_template))
     df = pd.read_csv(input_file, encoding="utf-8-sig")
     sample_df = select_random_personas(df, limit=limit, seed=seed)
-    sample_path = output_path / "selected_10_personas.csv"
+    sample_path = output_path / f"selected_{len(sample_df)}_personas.csv"
     sample_df.to_csv(sample_path, index=False, encoding="utf-8-sig")
+    sample_df.to_csv(output_path / "selected_personas.csv", index=False, encoding="utf-8-sig")
 
     if variants == "both":
         variant_plan = [("without_background", ""), ("with_background", "")]
@@ -810,7 +811,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Generate obesity questionnaire answers for sampled CFPS personas.")
     parser.add_argument("--input", default=str(DEFAULT_INPUT), help="Cleaned 210-person CSV.")
     parser.add_argument("--output-dir", default=str(DEFAULT_OUTPUT_DIR), help="Output directory.")
-    parser.add_argument("--limit", type=int, default=10, help="Random persona count.")
+    parser.add_argument("--limit", type=int, default=210, help="Persona count; default uses all 210 cleaned samples.")
     parser.add_argument("--seed", type=int, default=20260528, help="Random selection seed.")
     parser.add_argument("--variants", choices=["both", "with-background", "without-background"], default="both")
     parser.add_argument("--background-file", default=str(DEFAULT_BACKGROUND_FILE))
