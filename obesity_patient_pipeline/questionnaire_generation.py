@@ -6,6 +6,7 @@ import html
 import importlib.util
 import json
 import random
+import re
 import sys
 import time
 import zipfile
@@ -89,20 +90,61 @@ def clean_markdown_background(text: str) -> str:
     return "\n".join(lines).strip()
 
 
-def organize_background_context(raw_text: str, source_name: str) -> str:
-    cleaned = clean_markdown_background(raw_text)
+def markdown_background_to_narrative(text: str) -> str:
+    """Turn the desk-research Markdown into persona-friendly Chinese prose."""
+    cleaned = clean_markdown_background(text)
     if not cleaned:
+        return ""
+    heading_translations = {
+        "Survo competitor": "Survodutide竞品背景",
+        "**Desk research (pre-survey)**": "前期案头研究",
+        "KTAs": "关键启发",
+        "**Overview, by provider**": "按企业梳理",
+        "**Medical investment, by mechanism**": "按机制梳理",
+        "**Research second stage - Based on survey (in Chinese)**": "基于问卷资料的第二阶段中文整理",
+    }
+    narrative_lines: list[str] = []
+    current_heading = ""
+    for raw_line in cleaned.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        heading = line.lstrip("#").strip()
+        if line.startswith("#") and heading:
+            current_heading = heading_translations.get(heading, heading)
+            narrative_lines.append(f"关于{current_heading}，这份资料提供了以下背景。")
+            continue
+        line = line.lstrip("-*").strip()
+        if not re.search(r"[\u4e00-\u9fff]", line):
+            continue
+        line = line.replace("--&gt;", "，也就是说，").replace("-&gt;", "，也就是说，")
+        line = line.replace("-->", "，也就是说，").replace("->", "，也就是说，")
+        line = line.replace("&gt;", ">")
+        line = line.rstrip("。.;；")
+        if not line:
+            continue
+        narrative_lines.append(f"{line}。")
+    return "\n".join(narrative_lines)
+
+
+def organize_background_context(raw_text: str, source_name: str) -> str:
+    narrative = markdown_background_to_narrative(raw_text)
+    if not narrative:
         return ""
     return (
         f"【背景资料来源】{source_name}\n\n"
-        "【给persona的使用方式】\n"
-        "- 这是一份问卷前的竞品/机制背景材料，用于帮助persona理解GLP-1、GIP、胰高糖素机制及主要竞品差异。\n"
-        "- 不要把背景材料当作个人经历；persona是否知道、相信、偏好某个品牌，仍要由其年龄、BMI、合并症、支付能力、就医路径和信息渠道决定。\n"
-        "- Survodutide相关信息可影响对“代谢健康、脂肪肝/MASH、能量消耗”的理解；Mazdutide相关信息可影响对“体重/外观和综合减重”的理解。\n"
-        "- 若persona缺少专业医疗知识，回答中可以表现为只理解部分概念或依赖医生/社媒转述。\n"
-        "- 作答时不能用背景材料改写CFPS硬事实或筛选条件。\n\n"
-        "【完整背景材料（已清理Markdown转义，保留原有结构）】\n"
-        f"{cleaned}"
+        "【给persona的中文叙述说明】\n"
+        "这份材料不是受访者自己的病史，也不是医生给出的处方建议，而是访谈前让受访者理解竞品和机制差异的背景说明。"
+        "作答时，persona可以像真实患者一样只吸收其中一部分信息：教育程度较高、信息渠道更主动的人可能更能理解GLP-1、GIP和胰高糖素的差别；"
+        "对医疗信息不敏感的人则可能只记住“控制食欲、每周注射、减重幅度、副作用、是否覆盖脂肪肝/MASH”等直观信息。"
+        "背景不能改变CFPS中的年龄、性别、BMI、收入、合并症和就医线索，也不能让所有人机械地偏好同一产品。\n\n"
+        "机制上，GLP-1类药物通常通过增加饱腹感、降低食欲、延缓胃排空，并在血糖升高时促进胰岛素分泌来帮助体重和代谢管理。"
+        "GIP相关机制更偏向胰岛素敏感性和葡萄糖代谢控制，常让受访者联想到糖尿病或代谢控制。"
+        "胰高糖素机制在与GLP-1联合时，会被解释为可能增加能量消耗、促进脂肪代谢并帮助改善肝脏脂肪，因此更容易让有脂肪肝、MASH或代谢健康焦虑的人产生兴趣。"
+        "资料中也提示，Mazdutide和Survodutide都强调食欲控制之外的能量消耗；Survodutide更容易被理解为偏代谢健康和脂肪肝/MASH方向，"
+        "Mazdutide更容易被理解为偏体重、外观和综合减重方向。\n\n"
+        "【整理后的背景叙述】\n"
+        f"{narrative}"
     )
 
 
@@ -158,6 +200,264 @@ def question_ids(qnr_module: Any, include_screening: bool) -> list[str]:
     return [spec.qid for spec in specs]
 
 
+EXPORT_SOURCE_QID = {
+    "A6": "A6",
+    "A6a": "A6",
+    "A6b": "A6",
+    "A14": "A14_A15",
+    "A15": "A14_A15",
+    "C4": "C4_C5",
+    "C5": "C4_C5",
+}
+
+NON_MEDICAL_METHOD_CODES = [str(i) for i in range(1, 12)]
+NAME_TEST_CODES = [str(i) for i in range(1, 7)]
+CORE_GLP1_BRAND_CODES = {"3", "4", "5", "6"}
+
+
+def export_question_ids(qnr_module: Any, include_screening: bool) -> list[str]:
+    expanded: list[str] = []
+    for qid in question_ids(qnr_module, include_screening):
+        if qid == "A6":
+            expanded.extend(["A6", "A6a", "A6b"])
+        elif qid == "A14_A15":
+            expanded.extend(["A14", "A15"])
+        elif qid == "C4_C5":
+            expanded.extend(["C4", "C5"])
+        else:
+            expanded.append(qid)
+
+    # Match the desired questionnaire export order: B10/B11 should appear before B12.
+    for qid in ("B10", "B11"):
+        if qid in expanded and "B12" in expanded:
+            expanded.remove(qid)
+            expanded.insert(expanded.index("B12"), qid)
+    return expanded
+
+
+def as_mapping(value: Any) -> Mapping[str, Any]:
+    return value if isinstance(value, Mapping) else {}
+
+
+def code_text(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    return str(value).strip()
+
+
+def code_set(value: Any) -> set[str]:
+    if isinstance(value, (list, tuple, set)):
+        return {code_text(item) for item in value if code_text(item)}
+    if value in (None, ""):
+        return set()
+    return {code_text(value)}
+
+
+def answer_contains(answers: Mapping[str, Any], qid: str, code: object) -> bool:
+    return str(code) in code_set(answers.get(qid))
+
+
+def is_empty_answer(value: Any) -> bool:
+    return value is None or value == "" or value == [] or value == {}
+
+
+def b9_used_codes(answers: Mapping[str, Any]) -> set[str]:
+    rows = as_mapping(answers.get("B9"))
+    used: set[str] = set()
+    for code, payload in rows.items():
+        item = as_mapping(payload)
+        if code_text(item.get("used")) == "1":
+            used.add(code_text(code))
+    return used
+
+
+def b9_stopped_codes(answers: Mapping[str, Any]) -> set[str]:
+    rows = as_mapping(answers.get("B9"))
+    stopped: set[str] = set()
+    for code, payload in rows.items():
+        item = as_mapping(payload)
+        if code_text(item.get("used")) == "1" and code_text(item.get("status")) == "2":
+            stopped.add(code_text(code))
+    return stopped
+
+
+def b9_current_codes(answers: Mapping[str, Any]) -> set[str]:
+    rows = as_mapping(answers.get("B9"))
+    current: set[str] = set()
+    for code, payload in rows.items():
+        item = as_mapping(payload)
+        if code_text(item.get("used")) == "1" and code_text(item.get("status")) == "1":
+            current.add(code_text(code))
+    return current
+
+
+def has_glp1_experience(answers: Mapping[str, Any]) -> bool:
+    return answer_contains(answers, "S10", 13) or answer_contains(answers, "A20", 2)
+
+
+def is_question_applicable(source_qid: str, answers: Mapping[str, Any]) -> bool:
+    if source_qid == "CONSENT":
+        return True
+    if code_text(answers.get("CONSENT") or "1") == "2":
+        return False
+    if source_qid == "S9":
+        return answer_contains(answers, "S8", 1)
+    if source_qid == "A6":
+        return bool(code_set(answers.get("S10")) & set(NON_MEDICAL_METHOD_CODES))
+    if source_qid == "A10":
+        return not answer_contains(answers, "A9", 1)
+    if source_qid == "A11":
+        return answer_contains(answers, "A9", 1)
+    if source_qid in {"A12", "A13"}:
+        return code_text(answers.get("A11")) == "1"
+    if source_qid in {"A14_A15", "A16", "A17"}:
+        return code_text(answers.get("A11")) == "2"
+    if source_qid == "A18":
+        return answer_contains(answers, "A9", 2)
+    if source_qid == "A19":
+        return answer_contains(answers, "A9", 2) and not answer_contains(answers, "A9", 1)
+    if source_qid == "A19a":
+        return code_text(answers.get("A19")) == "1"
+    if source_qid == "A20":
+        return code_text(answers.get("A11")) in {"1", "2"} or code_text(answers.get("A19")) == "1"
+    if source_qid == "A21":
+        return answer_contains(answers, "A20", 2)
+    if source_qid == "A22":
+        return answer_contains(answers, "A20", 4)
+    if source_qid == "A23a":
+        return code_text(answers.get("A23")) == "1"
+    if source_qid == "B1":
+        return not has_glp1_experience(answers)
+    if source_qid == "B2":
+        return code_text(answers.get("B1")) == "1"
+    if source_qid == "B8":
+        return answer_contains(answers, "S10", 13) and not answer_contains(answers, "A9", 1)
+    if source_qid == "B9":
+        return has_glp1_experience(answers)
+    if source_qid in {"B12", "B13", "B14", "B14d", "B15", "B19", "B20", "B23"}:
+        return bool(b9_used_codes(answers) & CORE_GLP1_BRAND_CODES)
+    if source_qid in {"B10", "B18"}:
+        return bool(b9_stopped_codes(answers))
+    if source_qid == "B11":
+        return len(b9_used_codes(answers)) >= 2
+    if source_qid == "B15a":
+        rows = as_mapping(answers.get("B15"))
+        return any(code_text(as_mapping(item).get("interrupted")) == "1" for item in rows.values())
+    if source_qid == "B16":
+        return bool(b9_used_codes(answers) & {"3", "4", "5"})
+    if source_qid == "B17":
+        return has_glp1_experience(answers)
+    if source_qid in {"B20a", "B21", "B22"}:
+        return any(code_text(item) == "2" for item in as_mapping(answers.get("B20")).values())
+    if source_qid == "B23a":
+        return any("2" in code_set(item) for item in as_mapping(answers.get("B23")).values())
+    if source_qid == "B24":
+        used = b9_used_codes(answers)
+        return bool(used) and not b9_current_codes(answers)
+    if source_qid == "B24a":
+        return code_text(answers.get("B24")) == "1"
+    if source_qid == "B24b":
+        return code_text(answers.get("B24a")) in {"1", "2", "3", "4"}
+    if source_qid == "C3":
+        try:
+            return float(answers.get("C2")) < 8
+        except Exception:
+            return False
+    if source_qid == "D2":
+        return code_text(answers.get("D1")) in {"1", "2"}
+    if source_qid == "D5":
+        return code_text(answers.get("D4")) in {"2", "3", "4"}
+    if source_qid == "D9":
+        d8 = as_mapping(answers.get("D8"))
+        try:
+            return float(d8.get("4")) > 5
+        except Exception:
+            return False
+    return True
+
+
+def format_series(parts: list[str]) -> str:
+    return ", ".join(parts)
+
+
+def clean_numeric_for_series(value: Any) -> str:
+    text = clean_value(value)
+    if not text:
+        return ""
+    try:
+        number = float(text)
+    except Exception:
+        return text
+    if number.is_integer():
+        return str(int(number))
+    return f"{number:.1f}".rstrip("0").rstrip(".")
+
+
+def format_a6_series(export_qid: str, answers: Mapping[str, Any]) -> str:
+    if not is_question_applicable("A6", answers):
+        return "NA"
+    selected = code_set(answers.get("S10")) & set(NON_MEDICAL_METHOD_CODES)
+    payload = as_mapping(answers.get("A6"))
+    if not payload and selected:
+        return ""
+    metric = {"A6": "attempts", "A6a": "avg_months", "A6b": "monthly_cost_rmb"}[export_qid]
+    attempt_metric = "attempts"
+    parts: list[str] = []
+    for code in NON_MEDICAL_METHOD_CODES:
+        if code not in selected:
+            parts.append("0")
+            continue
+        item = as_mapping(payload.get(code))
+        if not item:
+            parts.append("")
+            continue
+        attempts = clean_numeric_for_series(item.get(attempt_metric))
+        if attempts == "0":
+            parts.append("0")
+            continue
+        if export_qid in {"A6a", "A6b"} and not attempts:
+            parts.append("")
+            continue
+        parts.append(clean_numeric_for_series(item.get(metric)))
+    return format_series(parts)
+
+
+def format_name_test_series(export_qid: str, answers: Mapping[str, Any]) -> str:
+    payload = as_mapping(answers.get("C4_C5"))
+    if not payload:
+        return ""
+    metric = "readability" if export_qid == "C4" else "memorability"
+    return format_series(clean_numeric_for_series(as_mapping(payload.get(code)).get(metric)) for code in NAME_TEST_CODES)
+
+
+def format_dual_department(export_qid: str, answers: Mapping[str, Any]) -> str:
+    if not is_question_applicable("A14_A15", answers):
+        return "NA"
+    payload = as_mapping(answers.get("A14_A15"))
+    if not payload:
+        return ""
+    key = "A14_first_department" if export_qid == "A14" else "A15_treatment_department"
+    return clean_value(payload.get(key))
+
+
+def format_answer_for_export(export_qid: str, answers: Mapping[str, Any]) -> str:
+    source_qid = EXPORT_SOURCE_QID.get(export_qid, export_qid)
+    if export_qid in {"A6", "A6a", "A6b"}:
+        return format_a6_series(export_qid, answers)
+    if export_qid in {"A14", "A15"}:
+        return format_dual_department(export_qid, answers)
+    if export_qid in {"C4", "C5"}:
+        return format_name_test_series(export_qid, answers)
+    if not is_question_applicable(source_qid, answers):
+        return "NA"
+    value = answers.get(source_qid)
+    if is_empty_answer(value):
+        return ""
+    return compact_json(value)
+
+
 def build_questionnaire_user_prompt(
     qnr_module: Any,
     individual_id: str,
@@ -178,8 +478,9 @@ def build_questionnaire_user_prompt(
         "- 使用题目ID作为answers的键，不要改题号。\n"
         "- 单选题返回一个代码；多选题返回代码数组；排序题返回{代码: 排名}；矩阵/数值题按answer_format返回。\n"
         "- CONSENT、S类甄别题必须与硬事实一致；S7 BMI必须与身高、体重、BMI种子一致。\n"
-        "- 若题目有show_if，不符合条件的题目留空、空数组或空对象。\n"
+        "- 若题目有show_if，不符合条件的题目留空、空数组或空对象；导出CSV时这些题目会被标为NA，适用但未回答才会留空。\n"
         "- GLP-1相关题要保持完整时间线：知晓、尝试、当前/既往使用、品牌、渠道、剂量、停药/换药和未来意愿不能互相矛盾。\n"
+        "- C部分为信息输入题，所有受访者在回答C1-C7前都必须阅读产品示卡文字，并以示卡中的产品X/A/B/C信息作为判断依据。\n"
         "- 背景信息只作为信息语境，不得让所有人机械偏好同一品牌。\n"
         "- 在assumption_notes写明哪些答案来自CFPS不可直接判定字段的模拟推断。\n"
         "- 在consistency_checks自检年龄、BMI、合并症、减重经历、GLP-1与购药/停药逻辑。\n\n"
@@ -256,7 +557,7 @@ def run_variant(
     questionnaire_temperature: float | None,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
-    ids = question_ids(qnr_module, include_screening)
+    ids = export_question_ids(qnr_module, include_screening)
     answer_fields = [
         "pid",
         "样本编号",
@@ -387,7 +688,7 @@ def run_variant(
                 "error": error,
             }
             for qid in ids:
-                answer_row[qid] = compact_json(answers.get(qid, ""))
+                answer_row[qid] = format_answer_for_export(qid, answers)
             answer_writer.writerow(answer_row)
 
             for usage in (profile_usage, questionnaire_usage):

@@ -106,15 +106,51 @@ def load_questionnaire_metadata() -> pd.DataFrame:
     spec.loader.exec_module(module)
     rows = []
     for item in module.QUESTIONNAIRE:
-        rows.append(
-            {
-                "题目ID": item.qid,
-                "问卷部分": item.section,
-                "题目文本": item.stem,
-                "题型": item.response_type,
-                "显示逻辑": item.show_if,
-            }
-        )
+        if item.qid == "A6":
+            derived = [
+                ("A6", "A6 尝试次数，按非西医减重措施1-11顺序导出，未经历该措施填0。"),
+                ("A6a", "A6a 单次平均坚持时长，按非西医减重措施1-11顺序导出；对应A6为0时填0。"),
+                ("A6b", "A6b 月均花费，按非西医减重措施1-11顺序导出；对应A6为0时填0。"),
+            ]
+        elif item.qid == "A14_A15":
+            derived = [
+                ("A14", "A14 首诊科室。"),
+                ("A15", "A15 接受减重治疗科室。"),
+            ]
+        elif item.qid == "C4_C5":
+            derived = [
+                ("C4", "C4 商品名易读性，按商品名1-6顺序导出。"),
+                ("C5", "C5 商品名好记程度，按商品名1-6顺序导出。"),
+            ]
+        else:
+            derived = [(item.qid, item.stem)]
+        for qid, stem in derived:
+            rows.append(
+                {
+                    "题目ID": qid,
+                    "问卷部分": item.section,
+                    "题目文本": stem,
+                    "题型": item.response_type,
+                    "显示逻辑": item.show_if,
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def load_section_c_product_card() -> pd.DataFrame:
+    if not QUESTIONNAIRE_TEMPLATE.exists():
+        return pd.DataFrame()
+    spec = importlib.util.spec_from_file_location("obesity_patient_questionnaire_template", QUESTIONNAIRE_TEMPLATE)
+    if spec is None or spec.loader is None:
+        return pd.DataFrame()
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    rows = []
+    for product, attrs in getattr(module, "PRODUCT_CARD", {}).items():
+        row = {"产品": product}
+        row.update(attrs)
+        rows.append(row)
     return pd.DataFrame(rows)
 
 
@@ -141,6 +177,9 @@ def build_comparison_tables(run_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame, 
 
     metadata = load_questionnaire_metadata()
     metadata.to_csv(run_dir / "comparison_question_metadata.csv", index=False, encoding="utf-8-sig")
+    product_card = load_section_c_product_card()
+    if not product_card.empty:
+        product_card.to_csv(run_dir / "comparison_section_c_product_card.csv", index=False, encoding="utf-8-sig")
 
     question_cols = [c for c in without_df.columns if c in with_df.columns and c not in META_COLUMNS]
     merged = without_df.merge(with_df, on="pid", suffixes=("_无背景", "_有背景"))
@@ -242,6 +281,28 @@ def build_comparison_tables(run_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame, 
     token_summary = pd.DataFrame(token_rows)
     token_summary.to_csv(run_dir / "comparison_runtime_token_summary.csv", index=False, encoding="utf-8-sig")
 
+    variant_summaries = []
+    for folder in ["不含背景信息", "含背景信息"]:
+        summary_path = run_dir / folder / "summary.json"
+        if summary_path.exists():
+            variant_summaries.append(json.loads(summary_path.read_text(encoding="utf-8")))
+    output_summary = {
+        "source": "rebuilt_from_variant_outputs",
+        "run_dir": str(run_dir),
+        "selected_sample": str(run_dir / "selected_10_personas.csv"),
+        "variants": "both",
+        "processed_total": int(sum(item.get("processed", 0) for item in variant_summaries)),
+        "failed_total": int(sum(item.get("failed", 0) for item in variant_summaries)),
+        "variant_summaries": variant_summaries,
+        "comparison_files": {
+            "answers_combined": str(run_dir / "comparison_answers_combined.csv"),
+            "question_differences": str(run_dir / "comparison_question_differences.csv"),
+            "changed_answer_details": str(run_dir / "comparison_changed_answer_details.csv"),
+            "notebook": str(run_dir / "with_without_background_comparison_eda.ipynb"),
+        },
+    }
+    (run_dir / "comparison_summary.json").write_text(json.dumps(output_summary, ensure_ascii=False, indent=2), encoding="utf-8")
+
     return combined, differences, token_summary, demographics, top_detail, persona_change
 
 
@@ -258,6 +319,12 @@ def build_notebook(
     top_changed = differences.head(20).copy()
     status = combined.groupby(["variant_label", "status"]).size().reset_index(name="人数")
     demographic_summary = demographics[[c for c in ["样本编号", "年龄", "性别", "省份", "城乡属性", "学历", "BMI", "BMI配额段", "目标人群细分", "合并症类别汇总"] if c in demographics.columns]].copy()
+    section_c_card_path = run_dir / "comparison_section_c_product_card.csv"
+    section_c_card = (
+        pd.read_csv(section_c_card_path, dtype=str, keep_default_na=False, encoding="utf-8-sig")
+        if section_c_card_path.exists()
+        else pd.DataFrame()
+    )
     if not persona_change.empty:
         segment_summary = (
             persona_change.groupby([c for c in ["性别", "BMI配额段", "目标人群细分"] if c in persona_change.columns], dropna=False)["变化题目数"]
@@ -285,15 +352,24 @@ def build_notebook(
             "## 1. 结论导读\n\n"
             "- 本 notebook 不嵌入静态SVG；图表由后续代码单元运行生成。\n"
             "- 重点不再只是运行时间，而是比较背景信息如何改变具体题目答案、哪些persona更容易变化，以及变化集中在哪些问卷模块。\n"
+            "- 本版答案导出已按问卷格式拆分A6/A6a/A6b、A14/A15、C4/C5，并用`NA`标记不适用题，适用但未回答保持空白。\n"
             "- `comparison_top10_changed_answer_details.csv` 保存了Top变化题目的逐人答案对照和人口学信息。"
         ),
-        md_cell("## 2. 运行状态\n\n" + df_to_markdown(status)),
-        md_cell("## 3. 10位persona人口学与健康画像\n\n" + df_to_markdown(demographic_summary, max_rows=10)),
-        md_cell("## 4. 每位persona受背景影响的题目数量\n\n" + df_to_markdown(persona_change, max_rows=10)),
-        md_cell("## 5. 分人群变化概览\n\n" + df_to_markdown(segment_summary, max_rows=20)),
-        md_cell("## 6. 运行耗时与token\n\n" + df_to_markdown(token_summary)),
-        md_cell("## 7. Top变化问题总览\n\n" + df_to_markdown(top_changed[top_summary_cols], max_rows=20)),
-        md_cell("## 8. Top变化问题逐人答案对照\n\n" + df_to_markdown(top_detail[top_detail_cols], max_rows=80)),
+        md_cell(
+            "## 2. 答案导出格式说明\n\n"
+            "- `A6`为非西医减重措施1-11的尝试次数序列，`A6a`为对应单次平均坚持时长，`A6b`为对应月均花费；没有经历某项措施的位置填0。\n"
+            "- `A14`和`A15`分别代表首诊科室与接受减重治疗科室。\n"
+            "- `C4`和`C5`分别代表6个商品名的易读性与好记程度评分序列。\n"
+            "- `NA`表示根据show_if逻辑不适用；空白表示该题适用但模型未给出答案或答案无法解析。"
+        ),
+        md_cell("## 3. C部分产品信息输入示卡\n\n" + df_to_markdown(section_c_card, max_rows=10)),
+        md_cell("## 4. 运行状态\n\n" + df_to_markdown(status)),
+        md_cell("## 5. 10位persona人口学与健康画像\n\n" + df_to_markdown(demographic_summary, max_rows=10)),
+        md_cell("## 6. 每位persona受背景影响的题目数量\n\n" + df_to_markdown(persona_change, max_rows=10)),
+        md_cell("## 7. 分人群变化概览\n\n" + df_to_markdown(segment_summary, max_rows=20)),
+        md_cell("## 8. 运行耗时与token\n\n" + df_to_markdown(token_summary)),
+        md_cell("## 9. Top变化问题总览\n\n" + df_to_markdown(top_changed[top_summary_cols], max_rows=20)),
+        md_cell("## 10. Top变化问题逐人答案对照\n\n" + df_to_markdown(top_detail[top_detail_cols], max_rows=80)),
         code_cell(
             "from pathlib import Path\n"
             "import html\n"
@@ -305,6 +381,7 @@ def build_notebook(
             "combined = pd.read_csv(RUN_DIR / 'comparison_answers_combined.csv', dtype=str, keep_default_na=False)\n"
             "diff = pd.read_csv(RUN_DIR / 'comparison_question_differences.csv', dtype=str, keep_default_na=False)\n"
             "top_detail = pd.read_csv(RUN_DIR / 'comparison_top10_changed_answer_details.csv', dtype=str, keep_default_na=False)\n"
+            "changed_detail = pd.read_csv(RUN_DIR / 'comparison_changed_answer_details.csv', dtype=str, keep_default_na=False)\n"
             "persona_change = pd.read_csv(RUN_DIR / 'comparison_persona_change_counts.csv', dtype=str, keep_default_na=False)\n"
             "demographics = pd.read_csv(RUN_DIR / 'comparison_selected_persona_demographics.csv', dtype=str, keep_default_na=False)\n"
             "token_summary = pd.read_csv(RUN_DIR / 'comparison_runtime_token_summary.csv', dtype=str, keep_default_na=False)\n"
@@ -348,6 +425,20 @@ def build_notebook(
             "                .size().reset_index(name='人数')\n"
             "                .sort_values(['题目ID','人数'], ascending=[True, False]))\n"
             "pair_summary.head(80)\n"
+        ),
+        code_cell(
+            "section_c_questions = ['C1','C2','C3','C4','C5','C6','C7']\n"
+            "section_c_diff = diff[diff['题目ID'].isin(section_c_questions)]\n"
+            "section_c_pairs = (changed_detail[changed_detail['题目ID'].isin(section_c_questions)]\n"
+            "                   .groupby(['题目ID','问卷部分','无背景答案','有背景答案'])\n"
+            "                   .size().reset_index(name='人数')\n"
+            "                   .sort_values(['题目ID','人数'], ascending=[True, False]))\n"
+            "display(section_c_diff[['题目ID','问卷部分','答案变化人数','答案变化率','主要答案迁移','题目文本']])\n"
+            "display(section_c_pairs.head(80))\n"
+        ),
+        code_cell(
+            "section_c_personas = changed_detail[changed_detail['题目ID'].isin(['C1','C2','C3','C4','C5','C6','C7'])]\n"
+            "section_c_personas[['题目ID','样本编号','年龄','性别','BMI','BMI配额段','目标人群细分','合并症类别汇总','无背景答案','有背景答案','题目文本']].head(120)\n"
         ),
         code_cell(
             "persona_profile_cols = ['variant_label','pid','样本编号','目标人群细分','BMI配额段','persona_summary','response_style','assumption_notes']\n"

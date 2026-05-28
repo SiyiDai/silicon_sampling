@@ -1,59 +1,62 @@
 {
-  "run_started_date": "2026-05-28",
-  "input_file": "C:\\Users\\siyid\\workspace\\silicon_sampling\\data\\persona_seed\\肥胖患者210样本_清洗与EDA_中文\\清洗后_210样本.csv",
-  "output_dir": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background",
-  "selected_sample": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\selected_10_personas.csv",
-  "limit": 10,
-  "random_seed": 20260528,
+  "source": "rebuilt_from_variant_outputs",
+  "run_dir": "C:\\tmp\\obesity_patient_pipeline_branch\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background",
+  "selected_sample": "C:\\tmp\\obesity_patient_pipeline_branch\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\selected_10_personas.csv",
   "variants": "both",
-  "background_file": "C:\\Users\\siyid\\Downloads\\Survo competitor.md",
-  "background_organized_chars": 4277,
+  "processed_total": 20,
+  "failed_total": 0,
   "variant_summaries": [
     {
       "variant": "without_background",
       "background_included": false,
       "background_chars": 0,
-      "run_started_utc": "2026-05-28T08:52:45.830515+00:00",
-      "run_finished_utc": "2026-05-28T09:03:13.358207+00:00",
-      "total_seconds": 627.5275,
+      "run_started_utc": "2026-05-28T22:15:41.029654+00:00",
+      "run_finished_utc": "2026-05-28T22:23:16.558888+00:00",
+      "total_seconds": 455.5318,
       "processed": 10,
       "failed": 0,
-      "question_count": 85,
+      "question_count": 89,
       "total_usage": {
-        "prompt_tokens": 231326,
-        "completion_tokens": 64153,
-        "total_tokens": 295479
+        "prompt_tokens": 235766,
+        "completion_tokens": 63987,
+        "total_tokens": 299753
       },
       "files": {
-        "answers": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\不含背景信息\\answers.csv",
-        "logs": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\不含背景信息\\logs.csv",
-        "personas_and_answers": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\不含背景信息\\personas_and_answers.jsonl",
-        "prompt_template": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\不含背景信息\\questionnaire_prompt_template.txt",
-        "background_context": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\不含背景信息\\background_context.txt"
+        "answers": "C:\\tmp\\obesity_patient_pipeline_branch\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\不含背景信息\\answers.csv",
+        "logs": "C:\\tmp\\obesity_patient_pipeline_branch\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\不含背景信息\\logs.csv",
+        "personas_and_answers": "C:\\tmp\\obesity_patient_pipeline_branch\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\不含背景信息\\personas_and_answers.jsonl",
+        "prompt_template": "C:\\tmp\\obesity_patient_pipeline_branch\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\不含背景信息\\questionnaire_prompt_template.txt",
+        "background_context": "C:\\tmp\\obesity_patient_pipeline_branch\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\不含背景信息\\background_context.txt"
       }
     },
     {
       "variant": "with_background",
       "background_included": true,
-      "background_chars": 4277,
-      "run_started_utc": "2026-05-28T15:27:42.540525+00:00",
-      "run_finished_utc": "2026-05-28T15:39:38.923510+00:00",
-      "total_seconds": 716.3829,
+      "background_chars": 2405,
+      "run_started_utc": "2026-05-28T22:36:00.364847+00:00",
+      "run_finished_utc": "2026-05-28T22:44:22.316768+00:00",
+      "total_seconds": 501.9539,
       "processed": 10,
       "failed": 0,
-      "question_count": 85,
+      "question_count": 89,
       "total_usage": {
-        "prompt_tokens": 269166,
-        "completion_tokens": 66979,
-        "total_tokens": 336145
+        "prompt_tokens": 272126,
+        "completion_tokens": 64316,
+        "total_tokens": 336442
       },
       "files": {
-        "answers": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\含背景信息\\answers.csv",
-        "logs": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\含背景信息\\logs.csv",
-        "personas_and_answers": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\含背景信息\\personas_and_answers.jsonl",
-        "prompt_template": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\含背景信息\\questionnaire_prompt_template.txt",
-        "background_context": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\含背景信息\\background_context.txt"
+        "answers": "C:\\tmp\\obesity_patient_pipeline_branch\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\含背景信息\\answers.csv",
+        "logs": "C:\\tmp\\obesity_patient_pipeline_branch\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\含背景信息\\logs.csv",
+        "personas_and_answers": "C:\\tmp\\obesity_patient_pipeline_branch\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\含背景信息\\personas_and_answers.jsonl",
+        "prompt_template": "C:\\tmp\\obesity_patient_pipeline_branch\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\含背景信息\\questionnaire_prompt_template.txt",
+        "background_context": "C:\\tmp\\obesity_patient_pipeline_branch\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\含背景信息\\background_context.txt"
       }
     }
-  ]
+  ],
+  "comparison_files": {
+    "answers_combined": "C:\\tmp\\obesity_patient_pipeline_branch\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\comparison_answers_combined.csv",
+    "question_differences": "C:\\tmp\\obesity_patient_pipeline_branch\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\comparison_question_differences.csv",
+    "changed_answer_details": "C:\\tmp\\obesity_patient_pipeline_branch\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\comparison_changed_answer_details.csv",
+    "notebook": "C:\\tmp\\obesity_patient_pipeline_branch\\obesity_patient_pipeline\\data\\obesity_questionnaire_10_persona_comparison_md_background\\with_without_background_comparison_eda.ipynb"
+  }
 }

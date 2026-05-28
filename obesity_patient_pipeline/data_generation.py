@@ -15,11 +15,21 @@ MODEL_NAME = "gpt-5.1"
 API_URL = "https://api.openai.com/v1/chat/completions"
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 REAL_INDIVIDUAL_PIPELINE = PROJECT_ROOT / "real_individual_pipeline"
+USER_WORKSPACE_ROOT = Path.home() / "workspace" / "silicon_sampling"
+USER_REAL_INDIVIDUAL_PIPELINE = USER_WORKSPACE_ROOT / "real_individual_pipeline"
 PROJECT_SITE_PACKAGES = PROJECT_ROOT / "silicon_sampling_env" / "Lib" / "site-packages"
+USER_PROJECT_SITE_PACKAGES = USER_WORKSPACE_ROOT / "silicon_sampling_env" / "Lib" / "site-packages"
 
 
 def _load_project_api_key() -> str | None:
-    for path in (REAL_INDIVIDUAL_PIPELINE, PROJECT_SITE_PACKAGES):
+    key_paths = [
+        REAL_INDIVIDUAL_PIPELINE,
+        USER_REAL_INDIVIDUAL_PIPELINE,
+        PROJECT_ROOT,
+        PROJECT_SITE_PACKAGES,
+        USER_PROJECT_SITE_PACKAGES,
+    ]
+    for path in reversed([path for path in key_paths if path.exists()]):
         if path.exists() and str(path) not in sys.path:
             sys.path.insert(0, str(path))
     try:
@@ -121,7 +131,8 @@ PROFILE_SYSTEM_PROMPT = (
     "请先把CFPS清洗样本中的硬事实转化为一个会呼吸的普通人：有生活处境、身体感受、就医与支付压力、信息渠道、减重经历倾向和治疗态度。"
     "必须守住硬事实：性别、年龄、身高、体重、BMI、BMI分层、学历、收入近似、疾病/合并症、就医和支付线索不得被改写。"
     "问卷要求但CFPS person文件不可直接判断的内容，只能作为有边界的模拟推断，并必须写入questionnaire_assumptions。"
-    "若提供竞品或产品背景，它只能影响信息环境、治疗机制理解和品牌语境，不能改变受访者的事实条件。"
+    "若提供竞品或产品背景，请把它当作访谈前给受访者阅读的中文解释材料：它可以影响其对药物机制、品牌语境和产品信息的理解，但不能改变受访者的事实条件。"
+    "画像要用自然叙述写出一个有真实生活触感的人，而不是把字段或背景资料逐条复述。"
     "输出必须是JSON。"
 )
 
@@ -131,6 +142,7 @@ QUESTIONNAIRE_SYSTEM_PROMPT = (
     "请严格依据CFPS种子信息、persona、问卷题目、选项编码、show_if逻辑和validation要求作答。"
     "这是市场研究模拟，不是医学建议；不要输出医疗建议。"
     "必须保持年龄性别、BMI、合并症、减重旅程、GLP-1认知/使用、购药渠道、停药/换药、品牌评价和新产品评价前后一致。"
+    "C部分的新产品测试必须先阅读产品示卡文字，并基于示卡里的作用机制、适应症布局、给药方式、疗效、代谢获益和安全性信息作答。"
     "硬事实不得改变；不可直接判定字段可以合理模拟，但要在assumption_notes说明。"
     "只输出JSON，不要解释。"
 )
@@ -192,8 +204,9 @@ def background_prompt_block(background_context: str) -> str:
         )
     return (
         "背景信息版本：提供以下竞品/产品背景给persona参考。\n"
-        "使用规则：背景只影响信息环境和品牌/机制认知，不得改写CFPS硬事实、筛选条件、疾病线索或收入/BMI/年龄。\n"
-        "背景内容：\n"
+        "使用规则：请把背景理解为访谈前阅读材料，用自然、有限的方式影响persona对GLP-1、GIP、胰高糖素机制和竞品定位的理解；"
+        "不得改写CFPS硬事实、筛选条件、疾病线索或收入/BMI/年龄，也不要让所有persona机械偏好同一品牌。\n"
+        "背景内容（已整理成中文叙述）：\n"
         f"{background_context.strip()}\n\n"
     )
 

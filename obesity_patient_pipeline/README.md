@@ -11,6 +11,7 @@ This pipeline mirrors `real_individual_pipeline`, but targets the strict 210-per
 - `prototype.py`: command-line alias for `questionnaire_generation.py`.
 - `build_comparison_eda_notebook.py`: builds the EDA notebook comparing both prompt variants.
 - `脚本逻辑分析.md`: notes from reading the earlier scripts.
+- `../questionnaire/obesity_patient_questionnaire_template.py`: self-contained questionnaire template used by this branch, including the C-section product information card transcribed from the image table.
 
 ## Default Inputs
 
@@ -33,6 +34,8 @@ The script writes:
 - `logs.csv`, `personas_and_answers.jsonl`, prompt templates, background text and summary JSON for each variant.
 
 The Markdown background is cleaned and organized before being injected into prompts. The script preserves the full Markdown-derived content by default and adds explicit rules so personas use it as market/competitor context, not as personal medical history.
+
+The answer CSV is exported in questionnaire order. `A6`, `A6a`, and `A6b` are split into aligned 1-11 method-code series for attempts, average duration, and monthly cost. `A14`/`A15` and `C4`/`C5` are also split into separate columns. Not-applicable fields are marked `NA`; applicable but unanswered fields remain blank.
 
 ## Build Comparison EDA Notebook
 
