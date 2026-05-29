@@ -1,0 +1,59 @@
+{
+  "run_started_date": "2026-05-29T07:10:41.410703",
+  "input_file": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline_210\\data\\清洗后_210样本.csv",
+  "output_dir": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline_210\\data\\obesity_questionnaire_210_persona_full_comparison",
+  "selected_sample": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline_210\\data\\obesity_questionnaire_210_persona_full_comparison\\selected_210_personas.csv",
+  "limit": 210,
+  "random_seed": 20260528,
+  "variants": "both",
+  "include_screening": true,
+  "model": "gpt-5.1",
+  "variant_summaries": [
+    {
+      "variant": "without_background",
+      "background_included": false,
+      "background_chars": 0,
+      "run_started_utc": "2026-05-28T23:39:07.866935+00:00",
+      "run_finished_utc": "2026-05-29T02:21:48.473894+00:00",
+      "total_seconds": 9760.633,
+      "processed": 210,
+      "failed": 0,
+      "question_count": 89,
+      "total_usage": {
+        "prompt_tokens": 4953372,
+        "completion_tokens": 1330041,
+        "total_tokens": 6283413
+      },
+      "files": {
+        "answers": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline_210\\data\\obesity_questionnaire_210_persona_full_comparison\\不含背景信息\\answers.csv",
+        "logs": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline_210\\data\\obesity_questionnaire_210_persona_full_comparison\\不含背景信息\\logs.csv",
+        "personas_and_answers": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline_210\\data\\obesity_questionnaire_210_persona_full_comparison\\不含背景信息\\personas_and_answers.jsonl",
+        "prompt_template": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline_210\\data\\obesity_questionnaire_210_persona_full_comparison\\不含背景信息\\questionnaire_prompt_template.txt",
+        "background_context": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline_210\\data\\obesity_questionnaire_210_persona_full_comparison\\不含背景信息\\background_context.txt"
+      }
+    },
+    {
+      "variant": "with_background",
+      "background_included": true,
+      "background_chars": 1521,
+      "run_started_utc": "2026-05-29T02:21:48.478978+00:00",
+      "run_finished_utc": "2026-05-29T05:10:41.408970+00:00",
+      "total_seconds": 10133.0276,
+      "processed": 210,
+      "failed": 0,
+      "question_count": 89,
+      "total_usage": {
+        "prompt_tokens": 5477532,
+        "completion_tokens": 1352958,
+        "total_tokens": 6830490
+      },
+      "files": {
+        "answers": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline_210\\data\\obesity_questionnaire_210_persona_full_comparison\\含背景信息\\answers.csv",
+        "logs": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline_210\\data\\obesity_questionnaire_210_persona_full_comparison\\含背景信息\\logs.csv",
+        "personas_and_answers": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline_210\\data\\obesity_questionnaire_210_persona_full_comparison\\含背景信息\\personas_and_answers.jsonl",
+        "prompt_template": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline_210\\data\\obesity_questionnaire_210_persona_full_comparison\\含背景信息\\questionnaire_prompt_template.txt",
+        "background_context": "C:\\Users\\siyid\\workspace\\silicon_sampling\\obesity_patient_pipeline_210\\data\\obesity_questionnaire_210_persona_full_comparison\\含背景信息\\background_context.txt"
+      }
+    }
+  ]
+}
